@@ -78,9 +78,7 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
     if (!containerRef.current) return;
 
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
+      containerRef.current.requestFullscreen().catch((err) => {});
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();

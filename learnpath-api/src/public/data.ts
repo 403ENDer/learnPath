@@ -1,6 +1,6 @@
 export const Coursedata = [
   {
-    id: "backend-dev",
+    id: "backend-development",
     title: "Backend Development",
     submodules: [
       {
@@ -324,7 +324,7 @@ export const Coursedata = [
     ],
   },
   {
-    id: "frontend-dev",
+    id: "frontend-development",
     title: "Frontend Development",
     submodules: [
       {

@@ -16,4 +16,12 @@ authRoute.get(
   }),
   handleGoogleCallback
 );
+
+authRoute.get("/verifyJWT", verifyJWTtoken, (req: any, res: any) => {
+  try {
+    res.status(200).send({ sucess: true });
+  } catch (err) {
+    console.log(err);
+  }
+});
 export default authRoute;

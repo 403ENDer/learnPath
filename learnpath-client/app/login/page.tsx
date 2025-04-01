@@ -26,7 +26,7 @@ export default function Login() {
           {/* Google Sign-in Button */}
           <button
             onClick={handleLogin}
-            className="flex items-center justify-center w-full border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-100 transition duration-200"
+            className="flex items-center justify-center w-full border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100 transition duration-200"
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"

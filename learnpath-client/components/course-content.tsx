@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/lib/data/course-types";
 
-interface CourseContentProps {
-  course: Course;
-}
-
-export default function CourseContent({ course }: CourseContentProps) {
+export default function CourseContent({ course }: any) {
   const [startedLessons, setStartedLessons] = useState<Record<string, boolean>>(
     {}
   );
@@ -26,40 +22,39 @@ export default function CourseContent({ course }: CourseContentProps) {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold">{course.title}</h1>
-          <p className="text-sm text-gray-500">{course.difficulty}</p>
         </div>
 
-        {course.modules.map((module) => (
+        {course.submodules.map((module: any) => (
           <div key={module.id} className="mb-12">
             <h2 className="text-xl font-bold mb-4">{module.title}</h2>
 
             <div className="space-y-4">
-              {module.lessons.map((lesson) => (
+              {module.topics.map((topic: any, index: any) => (
                 <div
-                  key={lesson.id}
-                  id={lesson.id}
+                  key={topic.topic}
+                  id={topic.topic}
                   className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="bg-gray-100 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3">
-                        {lesson.order}
+                        {index + 1}
                       </div>
-                      <h3 className="font-medium">{lesson.title}</h3>
+                      <h3 className="font-medium">{topic.topic}</h3>
                     </div>
 
                     <Button
-                      onClick={() => handleStartLesson(lesson.id)}
+                      onClick={() => handleStartLesson(topic.topic)}
                       variant={
-                        startedLessons[lesson.id] ? "outline" : "default"
+                        startedLessons[topic.topic] ? "outline" : "default"
                       }
                       className={
-                        startedLessons[lesson.id]
+                        startedLessons[topic.topic]
                           ? "border-green-500 text-green-500"
                           : ""
                       }
                     >
-                      {startedLessons[lesson.id] ? (
+                      {startedLessons[topic.topic] ? (
                         <>
                           <Check className="mr-2 h-4 w-4" />
                           Started
@@ -71,6 +66,23 @@ export default function CourseContent({ course }: CourseContentProps) {
                       )}
                     </Button>
                   </div>
+                  {/* 
+                  {startedLessons[topic.topic] && (
+                    <div className="mt-4 space-y-2">
+                      {topic.topics.map((subtopic: any) => (
+                        <a
+                          key={subtopic.subtopic}
+                          href={subtopic.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center text-blue-600 hover:underline"
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          {subtopic.topic}
+                        </a>
+                      ))}
+                    </div>
+                  )} */}
                 </div>
               ))}
             </div>

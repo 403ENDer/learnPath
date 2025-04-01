@@ -5,10 +5,10 @@ import { createToken } from "../utils/jwt";
 dotenv.config();
 export const handleGoogleCallback = async (req: any, res: any) => {
   const user = req.user;
-  const player = await UserModel.findOne({ email: user.emails[0].value });
+  let player = await UserModel.findOne({ email: user.emails[0].value });
 
   if (!player) {
-    const player = new UserModel({
+    player = new UserModel({
       name: user.name.givenName,
       email: user.emails[0].value,
     });
@@ -17,7 +17,8 @@ export const handleGoogleCallback = async (req: any, res: any) => {
 
   const token = createToken({
     id: player.id.toString(),
-    nane: player.name,
+    userId: player.userId,
+    name: player.name,
     emai: player.email,
   });
 

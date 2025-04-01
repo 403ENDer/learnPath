@@ -3,10 +3,10 @@ import dotenv from "dotenv";
 import passport from "../config/passport";
 import mongoose from "../config/db";
 import authRoute from "./routes/auth.routes";
+import courseRoute from "./routes/course.routes";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import roadmapRouter from "./routes/roadmap.routes";
 
 dotenv.config();
 const app = express();
@@ -35,7 +35,7 @@ app.use(passport.session());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
-app.use("/api/course", roadmapRouter);
+app.use("/api/course", courseRoute);
 app.listen(port, () => {
   mongoose.connect;
   console.log(`Server running on ${host}:${port}`);

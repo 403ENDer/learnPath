@@ -19,15 +19,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { dataStore } from "@/store/courseData";
 
 // Sample course topics
 const courseTopics = [
-  { value: "javascript", label: "JavaScript" },
-  { value: "python", label: "Python" },
-  { value: "react", label: "React" },
-  { value: "node", label: "Node.js" },
-  { value: "sql", label: "SQL" },
-  { value: "html-css", label: "HTML & CSS" },
   { value: "backend-development", label: "Backend Development" },
   { value: "frontend-development", label: "Frontend Development" },
   { value: "data-science", label: "Data Science" },
@@ -36,14 +31,18 @@ const courseTopics = [
 
 export default function CourseSelector() {
   const router = useRouter();
+  const store: any = dataStore();
   const [open, setOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("beginner");
   const [tailorCourse, setTailorCourse] = useState(false);
 
-  const handleGenerateCourse = () => {
+  const handleGenerateCourse = async () => {
     if (topic) {
-      router.push(`/course/${topic}?difficulty=${difficulty}`);
+      await store.generateCourse(router, {
+        domain: topic,
+        level: difficulty,
+      });
     }
   };
 
@@ -137,26 +136,8 @@ export default function CourseSelector() {
           </Button>
         </div>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="tailor"
-          checked={tailorCourse}
-          onCheckedChange={(checked) => setTailorCourse(checked as boolean)}
-        />
-        <label
-          htmlFor="tailor"
-          className="text-sm text-gray-600 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Tell us more to tailor the course (optional)
-        </label>
-        <span className="ml-auto text-xs bg-gray-200 px-2 py-0.5 rounded">
-          recommended
-        </span>
-      </div>
-
       <Button
-        className="w-full bg-gray-500 hover:bg-gray-600 text-white"
+        className="w-full bg-gray-700 hover:bg-gray-900 text-white"
         onClick={handleGenerateCourse}
       >
         <Wand2 className="mr-2 h-4 w-4" /> Generate Course

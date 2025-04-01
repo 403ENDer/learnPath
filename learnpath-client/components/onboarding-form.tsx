@@ -73,7 +73,6 @@ export default function OnboardingForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     // In a real app, you would save this to your backend
     // For now, we'll just navigate to the recommendations tab
     localStorage.setItem(

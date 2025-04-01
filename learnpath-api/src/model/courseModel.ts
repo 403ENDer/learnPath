@@ -13,6 +13,6 @@ const CourseSchema = new mongoose.Schema<Course>({
 });
 
 const CourseModel =
-  mongoose.models.Course || mongoose.model<Course>("Course", CourseSchema);
+  mongoose.models.Course || mongoose.model<Course>("courses", CourseSchema);
 
 export default CourseModel;

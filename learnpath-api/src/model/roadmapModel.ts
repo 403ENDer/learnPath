@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface Roadmap extends Document {
-  roadmap: any[];
+  roadmap: any;
 }
 
 const RoadmapSchema = new mongoose.Schema<Roadmap>({
-  roadmap: [{ type: Schema.Types.Mixed }],
+  roadmap: { type: Schema.Types.Mixed },
 });
 
 const RoadmapModel =
