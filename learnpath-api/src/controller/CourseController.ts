@@ -2,21 +2,24 @@ import RoadmapModel from "../model/roadmapModel";
 import CourseModel from "../model/courseModel";
 import { Coursedata } from "../public/data";
 import UserModel from "../model/userModel";
+import { RoadmapGenerator } from "./algorithms/algorithm";
 
 export class CourseController {
+  static generator = new RoadmapGenerator();
+
   public static dataFormatter(data: any) {
     const roadmap = data.roadmapId.roadmap;
-    const submodules = roadmap.submodules.map(
-      (submodule: any, moduleIndex: any) => ({
-        id: submodule.id,
-        title: submodule.title,
-        topics: submodule.topics.map((topic: any, topicIndex: any) => ({
-          id: `topic-${moduleIndex + 1}-${topicIndex + 1}`,
-          topic: topic.topic,
-          url: topic.subtopics.map((subtopic: any) => subtopic.url),
-        })),
-      })
-    );
+    console.log(roadmap);
+
+    const submodules = roadmap.map((submodule: any, moduleIndex: number) => ({
+      id: submodule.id,
+      title: submodule.topic,
+      topics: submodule.subtopics.map((topic: any, topicIndex: number) => ({
+        id: `topic-${moduleIndex + 1}-${topicIndex + 1}`,
+        topic: topic.subtopic,
+        url: topic.url,
+      })),
+    }));
 
     return {
       id: data.id,
@@ -67,14 +70,32 @@ export class CourseController {
     }
   }
 
+  public static async getRecommendation(req: any, res: any) {
+    try {
+      const course = await CourseModel.findById(req.query.id).populate(
+        "roadmapId"
+      );
+    } catch (err: any) {
+      return res.status(400).send({ error: err.message });
+    }
+  }
+
   public static async createCourse(req: any, res: any) {
     try {
+      const levelMap: Record<string, number> = {
+        beginner: 1,
+        intermediate: 2,
+        advanced: 3,
+      };
       const { domain, level } = req.body;
       const data = Coursedata.find((item) => item.id === domain);
 
       //roadmap generation logic comed here
-
-      const roadmap = await RoadmapModel.create({ roadmap: data });
+      const bestRoadMap = CourseController.generator.generateRoadmap(
+        domain,
+        levelMap[String(level).toLowerCase()]
+      );
+      const roadmap = await RoadmapModel.create({ roadmap: bestRoadMap.path });
       const course = await CourseModel.create({
         domain: domain,
         level: level,
@@ -98,6 +119,39 @@ export class CourseController {
       console.log(err);
       return res.status(400).send({ error: err.message });
     }
+  }
+
+  public static async reFrameRoadmap(req: any, res: any) {
+    const levelMap: Record<string, number> = {
+      beginner: 1,
+      intermediate: 2,
+      advanced: 3,
+    };
+    const data = req.body;
+    const { courseId, completedTopics, balanceTopics } = data;
+    const course = await CourseModel.findById(courseId);
+    const domain = course.domain;
+    const level = course.level;
+    const roadmap = CourseController.generator.reframeRoadmap(
+      domain,
+      completedTopics,
+      balanceTopics,
+      levelMap[String(level).toLowerCase()]
+    );
+
+    await RoadmapModel.findByIdAndUpdate(course.roadmapId, {
+      roadmap: roadmap.path,
+    });
+
+    const courseWithRoadmap = await CourseModel.findById(course._id).populate(
+      "roadmapId"
+    );
+
+    if (!courseWithRoadmap) {
+      return res.status(500).send({ message: "Course creation failed" });
+    }
+    const coursedata = CourseController.dataFormatter(courseWithRoadmap);
+    return res.send({ data: coursedata });
   }
 
   public static async updateCourse(req: any, res: any) {

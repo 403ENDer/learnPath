@@ -6,6 +6,7 @@ const courseRoute = Router();
 courseRoute.get("/", CourseController.getCourse);
 courseRoute.get("/list", verifyJWTtoken, CourseController.getUserCourses);
 courseRoute.post("/", verifyJWTtoken, CourseController.createCourse);
+courseRoute.put("/", CourseController.reFrameRoadmap);
 courseRoute.put("/", CourseController.updateCourse);
 
 export default courseRoute;

@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Course } from "@/lib/data/course-types";
+import { Button } from "@/components/ui/button";
+import { HelpCircle } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -90,6 +92,12 @@ export default function CourseSidebar({ course }: any) {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <Button
+        variant="outline"
+        className="w-14 h-14 p-0 flex items-center justify-center rounded-full"
+      >
+        ?{/* <HelpCircle className="w-8 h-8" /> */}
+      </Button>
     </Sidebar>
   );
 }

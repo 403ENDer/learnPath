@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, ExternalLink } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Course } from "@/lib/data/course-types";
+import { HelpCircle } from "lucide-react";
 
 export default function CourseContent({ course }: any) {
   const [startedLessons, setStartedLessons] = useState<Record<string, boolean>>(
