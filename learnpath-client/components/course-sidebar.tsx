@@ -5,8 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
-
+import { dataStore } from "@/store/courseData";
 import {
   Sidebar,
   SidebarContent,
@@ -16,17 +15,62 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+
 export default function CourseSidebar({ course }: any) {
   const [activeModule, setActiveModule] = useState<string | null>(
     course.submodules.length > 0 ? course.submodules[0].id : null
   );
+  const [open, setOpen] = useState(false);
+  const store: any = dataStore();
+
+  const handleRefresh = () => {
+    setOpen(false);
+    const flag = store.reframeRoadmap({ courseId: course.id });
+    if (flag) {
+      toast.success("Roadmap refreshed successfully");
+    } else {
+      toast.error("Failed to refresh the roadmap");
+    }
+  };
+  function calculateCourseProgress(course: any) {
+    let total = 0;
+    let completed = 0;
+
+    course.submodules.forEach((module: any) => {
+      module.topics.forEach((subtopic: any) => {
+        total += 1;
+        if (subtopic.isTopicCompleted) {
+          completed += 1;
+        }
+      });
+    });
+
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+
+    return {
+      percentage: percentage.toFixed(0),
+    };
+  }
+
+  const { percentage } = calculateCourseProgress(course);
 
   return (
     <Sidebar className="border-r border-gray-200 w-80 min-w-80">
       <SidebarHeader className="p-4 border-b border-gray-200">
         <div className="flex items-center">
           <div className="bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">
-            0%
+            {percentage}%
           </div>
           <span className="text-xs">Completed</span>
         </div>
@@ -91,13 +135,34 @@ export default function CourseSidebar({ course }: any) {
             </div>
           ))}
         </SidebarMenu>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="ml-1.5 mr-1.5">
+              Want to reframe roadmap?
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reframing Roadmap</DialogTitle>
+              <DialogDescription className="text-black">
+                Your completed topics are safe and sound! We’ll update the
+                incomplete ones with something new. Ready to refresh?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-start">
+              <DialogClose asChild>
+                <Button type="button" variant="destructive">
+                  Close
+                </Button>
+              </DialogClose>
+
+              <Button type="button" variant="default" onClick={handleRefresh}>
+                Refresh
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SidebarContent>
-      <Button
-        variant="outline"
-        className="w-14 h-14 p-0 flex items-center justify-center rounded-full"
-      >
-        ?{/* <HelpCircle className="w-8 h-8" /> */}
-      </Button>
     </Sidebar>
   );
 }

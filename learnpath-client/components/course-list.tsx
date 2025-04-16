@@ -1,4 +1,23 @@
 export default function CourseList({ data }: any) {
+  const formatDomain = (domain: string, level: string) => {
+    const levelMap: Record<string, string> = {
+      beginner: "Level 1",
+      intermediate: "Level 2",
+      advanced: "Level 3",
+    };
+
+    const formattedLevel = levelMap[level.toLowerCase()] || "";
+    const formattedDomain = domain
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    return ` ${formattedDomain} Course - ${formattedLevel}`.trim();
+  };
+
+  const formatLevel = (level: string) => {
+    return level.charAt(0).toUpperCase() + level.slice(1);
+  };
+
   if (!data || !data._id) {
     return <p>No course data available.</p>;
   }
@@ -12,9 +31,13 @@ export default function CourseList({ data }: any) {
         className="block w-full bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
       >
         <div className="text-xs text-green-600 font-medium mb-1">
-          {data.level || "Unknown Level"}
+          {data.level ? formatLevel(data.level) : "Unknown Level"}
         </div>
-        <h3 className="font-bold">{data.domain || "Unknown Domain"}</h3>
+        <h3 className="font-bold">
+          {data.domain
+            ? formatDomain(data.domain, data.level)
+            : "Unknown Domain"}
+        </h3>
 
         <div className="flex items-center mt-2 text-sm text-gray-600">
           <svg

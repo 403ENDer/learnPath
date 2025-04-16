@@ -16,8 +16,7 @@ export const dataStore = create((set, get) => ({
       });
 
       set({ courseData: respone.data.data });
-
-      router.push(`/course/${respone.data.data.id}`);
+      return respone.data.data;
     } catch (err) {
       toast.error("Error in generating Course,try again", {
         style: {
@@ -54,6 +53,41 @@ export const dataStore = create((set, get) => ({
       return response.data.data;
     } catch (err) {
       console.log("Error in fetching data", err);
+    }
+  },
+
+  updateCourse: async (payload: any) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(`${url}/api/course/`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (err) {
+      console.log("Error in updating course", err);
+    }
+  },
+
+  reframeRoadmap: async (payload: any) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${url}/api/course/reframeCourse`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      set({ courseData: response.data.data });
+
+      return true;
+    } catch (err) {
+      console.log("Error in reframing roadmap", err);
+      return false;
     }
   },
 }));

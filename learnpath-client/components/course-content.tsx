@@ -3,18 +3,13 @@
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
-
+import { dataStore } from "@/store/courseData";
 export default function CourseContent({ course }: any) {
-  const [startedLessons, setStartedLessons] = useState<Record<string, boolean>>(
-    {}
-  );
-
-  const handleStartLesson = (lessonId: string) => {
-    setStartedLessons((prev) => ({
-      ...prev,
-      [lessonId]: true,
-    }));
+  const store: any = dataStore();
+  console.log(course);
+  const handleStartLesson = (topic: any) => {
+    store.updateCourse({ courseId: course.id, topicId: topic.id });
+    window.location.href = topic.url;
   };
 
   return (
@@ -44,17 +39,15 @@ export default function CourseContent({ course }: any) {
                     </div>
 
                     <Button
-                      onClick={() => handleStartLesson(topic.topic)}
-                      variant={
-                        startedLessons[topic.topic] ? "outline" : "default"
-                      }
+                      onClick={() => handleStartLesson(topic)}
+                      variant={topic.isTopicCompleted ? "outline" : "default"}
                       className={
-                        startedLessons[topic.topic]
+                        topic.isTopicCompleted
                           ? "border-green-500 text-green-500"
                           : ""
                       }
                     >
-                      {startedLessons[topic.topic] ? (
+                      {topic.isTopicCompleted ? (
                         <>
                           <Check className="mr-2 h-4 w-4" />
                           Started

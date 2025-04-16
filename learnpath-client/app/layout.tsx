@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { LoaderProvider } from "./context/loaderContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -19,21 +20,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Toaster position="top-center" />
-
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            {" "}
-            <div className="w-full">{children}</div>
-          </SidebarProvider>
-        </ThemeProvider>
-      </body>
+      <LoaderProvider>
+        <body className={inter.className}>
+          <Toaster position="top-center" />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider>
+              {" "}
+              <div className="w-full">{children}</div>
+            </SidebarProvider>
+          </ThemeProvider>
+        </body>
+      </LoaderProvider>
     </html>
   );
 }

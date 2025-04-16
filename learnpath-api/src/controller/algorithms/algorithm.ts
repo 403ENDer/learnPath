@@ -152,7 +152,6 @@ export class RoadmapGenerator {
       throw new Error(`Domain ${domainId} not found`);
     }
 
-    // Get all topics in this domain
     const domainTopics: TopicNode[] = [];
     for (const submodule of domain.submodules) {
       domainTopics.push(
@@ -165,12 +164,10 @@ export class RoadmapGenerator {
       );
     }
 
-    // Filter and map completed topics
     const completedTopicObjects = domainTopics
       .filter((topic) => completedTopics.includes(topic.id))
       .map((topic) => ({ ...topic }));
 
-    // Get remaining topics (excluding completed and balance topics)
     const remainingTopics = domainTopics.filter(
       (topic) =>
         !completedTopics.includes(topic.id) &&
@@ -178,28 +175,23 @@ export class RoadmapGenerator {
         topic.difficulty <= targetLevel
     );
 
-    // Track all possible paths
     const allPaths: RoadmapResult[] = [];
 
-    // Recursive path building
     const buildPaths = (
       currentPath: TopicNode[],
       remaining: TopicNode[],
       currentValue: number,
       currentDifficulty: number
     ) => {
-      // Add current path to results
       allPaths.push({
         path: [...currentPath],
         totalValue: currentValue,
         difficulty: currentDifficulty,
       });
 
-      // Try adding each remaining topic
       for (let i = 0; i < remaining.length; i++) {
         const topic = remaining[i];
 
-        // Check prerequisites
         const prerequisitesMet = topic.prerequisites.every(
           (prereq) =>
             completedTopics.includes(prereq) ||

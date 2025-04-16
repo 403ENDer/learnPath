@@ -9,15 +9,15 @@ export class CourseController {
 
   public static dataFormatter(data: any) {
     const roadmap = data.roadmapId.roadmap;
-    console.log(roadmap);
-
     const submodules = roadmap.map((submodule: any, moduleIndex: number) => ({
       id: submodule.id,
       title: submodule.topic,
+      isModuleCompleted: submodule.isModuleCompleted,
       topics: submodule.subtopics.map((topic: any, topicIndex: number) => ({
-        id: `topic-${moduleIndex + 1}-${topicIndex + 1}`,
+        id: topic.id,
         topic: topic.subtopic,
         url: topic.url,
+        isTopicCompleted: topic.isTopicCompleted,
       })),
     }));
 
@@ -26,6 +26,29 @@ export class CourseController {
       title: roadmap.title,
       submodules,
     };
+  }
+
+  public static async addCompleteState(roadmap: any) {
+    roadmap.forEach((submodule: any) => {
+      submodule.isModuleCompleted = false;
+      submodule.subtopics.forEach((topic: any) => {
+        topic.isTopicCompleted = false;
+      });
+    });
+
+    return roadmap;
+  }
+
+  public static async topicsSplit(roadmap: any) {
+    const completedTopics: any[] = [];
+    const balanceTopics: any[] = [];
+    roadmap.forEach((submodule: any) => {
+      submodule.subtopics.some((topic: any) => topic.isModuleCompleted == true)
+        ? completedTopics.push(submodule)
+        : balanceTopics.push(submodule);
+    });
+
+    return { completedTopics, balanceTopics };
   }
 
   public static async getUserCourses(req: any, res: any) {
@@ -43,7 +66,7 @@ export class CourseController {
           );
           return {
             ...item.toObject(),
-            length: course?.roadmapId?.roadmap?.submodules?.length || 0,
+            length: course?.roadmapId?.roadmap.length || 0,
           };
         })
       );
@@ -95,7 +118,10 @@ export class CourseController {
         domain,
         levelMap[String(level).toLowerCase()]
       );
-      const roadmap = await RoadmapModel.create({ roadmap: bestRoadMap.path });
+      const finalRoadmap = await CourseController.addCompleteState(
+        bestRoadMap.path
+      );
+      const roadmap = await RoadmapModel.create({ roadmap: finalRoadmap });
       const course = await CourseModel.create({
         domain: domain,
         level: level,
@@ -128,17 +154,25 @@ export class CourseController {
       advanced: 3,
     };
     const data = req.body;
-    const { courseId, completedTopics, balanceTopics } = data;
-    const course = await CourseModel.findById(courseId);
+    const { courseId } = data;
+    const course = await CourseModel.findById(courseId).populate("roadmapId");
+    const { completedTopics, balanceTopics } =
+      await CourseController.topicsSplit(course.roadmapId.roadmap);
     const domain = course.domain;
     const level = course.level;
+    console.log(
+      domain,
+      completedTopics,
+      balanceTopics,
+      levelMap[String(level).toLowerCase()]
+    );
     const roadmap = CourseController.generator.reframeRoadmap(
       domain,
       completedTopics,
       balanceTopics,
       levelMap[String(level).toLowerCase()]
     );
-
+    console.log(roadmap);
     await RoadmapModel.findByIdAndUpdate(course.roadmapId, {
       roadmap: roadmap.path,
     });
@@ -154,9 +188,32 @@ export class CourseController {
     return res.send({ data: coursedata });
   }
 
-  public static async updateCourse(req: any, res: any) {
-    const data = req.body();
-    const roadmap = await RoadmapModel.findByIdAndUpdate(data.id, data);
-    return res.send({ data: roadmap });
+  public static async updateStatus(req: any, res: any) {
+    try {
+      const data = req.body;
+      const { topicId, courseId } = data;
+      console.log(data);
+      const course = await CourseModel.findById(courseId);
+      const roadmap = await RoadmapModel.findById(course.roadmapId);
+      roadmap.roadmap.forEach((module: any) => {
+        module.subtopics.map((topic: any) => {
+          if (topic.id === topicId) {
+            topic.isTopicCompleted = true;
+          }
+        });
+
+        module.subtopics.some((topic: any) => topic.isTopicCompleted === false)
+          ? (module.isModuleCompleted = false)
+          : (module.isModuleCompleted = true);
+      });
+      roadmap.markModified("roadmap");
+      await roadmap.save();
+      return res
+        .status(200)
+        .send({ sucess: true, message: "Topic status updated" });
+    } catch (err) {
+      console.log(err);
+      return res.send({ sucess: false, message: "Opeation failed" });
+    }
   }
 }

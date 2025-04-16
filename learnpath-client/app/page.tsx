@@ -9,8 +9,11 @@ import { useEffect } from "react";
 import { dataStore } from "@/store/courseData";
 import "../api/axios";
 import CourseList from "@/components/course-list";
+import { useLoader } from "./context/loaderContext";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function HomePage() {
+  const { loading, setLoading } = useLoader();
   const store: any = useAuthStore();
   const router = useRouter();
   const userData: any = dataStore();
@@ -37,6 +40,14 @@ export default function HomePage() {
             <CourseSelector />
           </div>
           {/* Your Courses Section */}
+          {loading && (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-50 bg-opacity-70 z-50">
+              <Spinner className="text-blue-400 w-8 h-8" />
+              <span className="text-lg font-semibold text-gray-700">
+                &nbsp;&nbsp;&nbsp;Loading Course Data...
+              </span>
+            </div>
+          )}
           {userData.courses && userData.courses.length > 0 && (
             <div className="mt-12">
               <div className="flex justify-between items-center mb-4">

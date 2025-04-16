@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { dataStore } from "@/store/courseData";
+import { useLoader } from "@/app/context/loaderContext";
 
 // Sample course topics
 const courseTopics = [
@@ -36,13 +37,17 @@ export default function CourseSelector() {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("beginner");
   const [tailorCourse, setTailorCourse] = useState(false);
+  const { loading, setLoading } = useLoader();
 
   const handleGenerateCourse = async () => {
+    setLoading(true);
     if (topic) {
-      await store.generateCourse(router, {
+      const data = await store.generateCourse(router, {
         domain: topic,
         level: difficulty,
       });
+      setLoading(false);
+      router.push(`/course/${data.id}`);
     }
   };
 
@@ -64,7 +69,7 @@ export default function CourseSelector() {
                 ? courseTopics.find(
                     (courseTopic) => courseTopic.value === topic
                   )?.label
-                : "e.g., Algebra, JavaScript, Photography"}
+                : "e.g., Backend Development"}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
