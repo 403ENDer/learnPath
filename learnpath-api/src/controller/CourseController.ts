@@ -160,17 +160,11 @@ export class CourseController {
       await CourseController.topicsSplit(course.roadmapId.roadmap);
     const domain = course.domain;
     const level = course.level;
-    console.log(
-      domain,
-      completedTopics,
-      balanceTopics,
-      levelMap[String(level).toLowerCase()]
-    );
+
     const roadmap = CourseController.generator.reframeRoadmap(
       domain,
-      completedTopics,
-      balanceTopics,
-      levelMap[String(level).toLowerCase()]
+      levelMap[String(level).toLowerCase()],
+      course.roadmapId.roadmap
     );
     console.log(roadmap);
     await RoadmapModel.findByIdAndUpdate(course.roadmapId, {

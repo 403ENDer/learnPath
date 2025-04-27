@@ -138,15 +138,15 @@ export default function CourseSidebar({ course }: any) {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="ml-1.5 mr-1.5">
-              Want to reframe roadmap?
+              Want to maximize learning?
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Reframing Roadmap</DialogTitle>
+              <DialogTitle>Maximizing Roadmap</DialogTitle>
               <DialogDescription className="text-black">
-                Your completed topics are safe and sound! We’ll update the
-                incomplete ones with something new. Ready to refresh?
+                Every step forward, complete or not, is a chance to learn more —
+                let’s make the most of every moment.. Ready to Maximize?
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-start">

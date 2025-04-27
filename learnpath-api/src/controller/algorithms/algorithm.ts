@@ -143,15 +143,24 @@ export class RoadmapGenerator {
 
   public reframeRoadmap(
     domainId: string,
-    completedTopics: string[],
-    balanceTopics: string[],
-    targetLevel: number
+    targetLevel: number,
+    existingRoadmap: TopicNode[]
   ): RoadmapResult {
+    let slots: number;
+    if (targetLevel === 1) {
+      slots = 3;
+    } else if (targetLevel === 2) {
+      slots = 2;
+    } else {
+      slots = Number.MAX_SAFE_INTEGER;
+    }
+
     const domain = Coursedata.find((d) => d.id === domainId);
     if (!domain) {
       throw new Error(`Domain ${domainId} not found`);
     }
 
+    // Flatten all topics in the domain
     const domainTopics: TopicNode[] = [];
     for (const submodule of domain.submodules) {
       domainTopics.push(
@@ -164,80 +173,80 @@ export class RoadmapGenerator {
       );
     }
 
-    const completedTopicObjects = domainTopics
-      .filter((topic) => completedTopics.includes(topic.id))
-      .map((topic) => ({ ...topic }));
-
-    const remainingTopics = domainTopics.filter(
-      (topic) =>
-        !completedTopics.includes(topic.id) &&
-        !balanceTopics.includes(topic.id) &&
-        topic.difficulty <= targetLevel
+    // Filter out topics already in existingRoadmap
+    const existingTopicIds = new Set(existingRoadmap.map((t) => t.id));
+    const candidateTopics = domainTopics.filter(
+      (topic) => !existingTopicIds.has(topic.id)
     );
 
-    const allPaths: RoadmapResult[] = [];
-
-    const buildPaths = (
-      currentPath: TopicNode[],
-      remaining: TopicNode[],
-      currentValue: number,
-      currentDifficulty: number
-    ) => {
-      allPaths.push({
-        path: [...currentPath],
-        totalValue: currentValue,
-        difficulty: currentDifficulty,
-      });
-
-      for (let i = 0; i < remaining.length; i++) {
-        const topic = remaining[i];
-
-        const prerequisitesMet = topic.prerequisites.every(
-          (prereq) =>
-            completedTopics.includes(prereq) ||
-            currentPath.some((t) => t.id === prereq)
-        );
-
-        if (prerequisitesMet) {
-          const newRemaining = remaining.filter((_, index) => index !== i);
-          const topicValue = this.calculateTopicValue(topic);
-
-          buildPaths(
-            [...currentPath, topic],
-            newRemaining,
-            currentValue + topicValue,
-            currentDifficulty + topic.difficulty
-          );
-        }
-      }
-    };
-
-    // Start building paths with completed topics
-    const initialValue = completedTopicObjects.reduce(
-      (sum, topic) => sum + this.calculateTopicValue(topic),
-      0
-    );
-    const initialDifficulty = completedTopicObjects.reduce(
-      (sum, topic) => sum + topic.difficulty,
-      0
-    );
-
-    buildPaths(
-      [...completedTopicObjects],
-      remainingTopics,
-      initialValue,
-      initialDifficulty
-    );
-
-    // Find path with maximum value
-    if (allPaths.length === 0) {
+    if (slots === Number.MAX_SAFE_INTEGER) {
+      const sortedCandidates = candidateTopics.sort(
+        (a, b) => this.calculateTopicValue(b) - this.calculateTopicValue(a)
+      );
+      const newPath = [...existingRoadmap, ...sortedCandidates];
+      const totalValue = newPath.reduce(
+        (sum, t) => sum + this.calculateTopicValue(t),
+        0
+      );
+      const totalDifficulty = newPath.reduce((sum, t) => sum + t.difficulty, 0);
       return {
-        path: [...completedTopicObjects],
-        totalValue: initialValue,
-        difficulty: initialDifficulty,
+        path: newPath,
+        totalValue,
+        difficulty: totalDifficulty,
       };
     }
 
-    return allPaths.reduce((best, current) => best);
+    const n = candidateTopics.length;
+    const W = slots;
+
+    const dp: number[][] = Array(n + 1)
+      .fill(0)
+      .map(() => Array(W + 1).fill(0));
+
+    // Keep track of choices
+    const keep: boolean[][] = Array(n + 1)
+      .fill(false)
+      .map(() => Array(W + 1).fill(false));
+
+    for (let i = 1; i <= n; i++) {
+      const topic = candidateTopics[i - 1];
+      const value = this.calculateTopicValue(topic);
+      const weight = 1;
+
+      for (let w = 0; w <= W; w++) {
+        if (weight <= w) {
+          if (dp[i - 1][w] < dp[i - 1][w - weight] + value) {
+            dp[i][w] = dp[i - 1][w - weight] + value;
+            keep[i][w] = true;
+          } else {
+            dp[i][w] = dp[i - 1][w];
+          }
+        } else {
+          dp[i][w] = dp[i - 1][w];
+        }
+      }
+    }
+
+    let w = W;
+    const selectedTopics: TopicNode[] = [];
+    for (let i = n; i > 0; i--) {
+      if (keep[i][w]) {
+        selectedTopics.push(candidateTopics[i - 1]);
+        w -= 1;
+      }
+    }
+
+    const newPath = [...existingRoadmap, ...selectedTopics.reverse()];
+    const totalValue = newPath.reduce(
+      (sum, t) => sum + this.calculateTopicValue(t),
+      0
+    );
+    const totalDifficulty = newPath.reduce((sum, t) => sum + t.difficulty, 0);
+
+    return {
+      path: newPath,
+      totalValue,
+      difficulty: totalDifficulty,
+    };
   }
 }
